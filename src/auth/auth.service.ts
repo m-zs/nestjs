@@ -27,7 +27,7 @@ export class AuthService {
           `Username ${authCredentials.username} already exist`,
         );
       } else {
-        throw new InternalServerErrorException('a');
+        throw new InternalServerErrorException();
       }
     }
   }
