@@ -11,6 +11,4 @@ import { TasksService } from './tasks.service';
   controllers: [TasksController],
   providers: [TasksService],
 })
-export class TasksModule {
-  // constructor(private connection: Connection) {}
-}
+export class TasksModule {}

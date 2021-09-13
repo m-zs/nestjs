@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { User } from 'src/auth/user.entity';
 import { CreateTaskDTO } from './DTO/create-task.dto';
 import { UpdateTaskStatusDTO } from './DTO/update-task-status.dto';
 import { Task } from './task.entity';
@@ -12,12 +13,12 @@ export class TasksService {
     @InjectRepository(TasksRepository) private tasksRepository: TasksRepository,
   ) {}
 
-  getAllTasks(): Promise<Task[]> {
-    return this.tasksRepository.findTasks();
+  getAllTasks(user: User): Promise<Task[]> {
+    return this.tasksRepository.findTasks(user);
   }
 
-  async getTaskById(id: string): Promise<Task> {
-    const task = await this.tasksRepository.findTask(id);
+  async getTaskById(id: string, user: User): Promise<Task> {
+    const task = await this.tasksRepository.findTask(id, user);
 
     if (!task) {
       throw new NotFoundException();
@@ -26,20 +27,27 @@ export class TasksService {
     return task;
   }
 
-  createTask(createTaskDTO: CreateTaskDTO): Promise<Task> {
-    return this.tasksRepository.createTask(createTaskDTO);
+  createTask(createTaskDTO: CreateTaskDTO, user: User): Promise<Task> {
+    return this.tasksRepository.createTask(createTaskDTO, user);
   }
 
-  async deleteTask(id: string): Promise<void> {
-    const hasBeenFoundAndDeleted = await this.tasksRepository.deleteTask(id);
+  async deleteTask(id: string, user: User): Promise<void> {
+    const hasBeenFoundAndDeleted = await this.tasksRepository.deleteTask(
+      id,
+      user,
+    );
 
     if (!hasBeenFoundAndDeleted) {
       throw new NotFoundException();
     }
   }
 
-  async updateTask(id: string, { status }: UpdateTaskStatusDTO): Promise<Task> {
-    const task = await this.getTaskById(id);
+  async updateTask(
+    id: string,
+    { status }: UpdateTaskStatusDTO,
+    user: User,
+  ): Promise<Task> {
+    const task = await this.getTaskById(id, user);
 
     task.status = status;
 
