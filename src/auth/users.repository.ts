@@ -1,3 +1,4 @@
+import { InternalServerErrorException, Logger } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
@@ -10,20 +11,35 @@ export enum USER_ERRORS {
 
 @EntityRepository(User)
 export class UsersRepository extends Repository<User> {
+  private logger = new Logger();
+
   async createUser(authCredentials: AuthCredentialsDTO): Promise<void> {
-    const { username, password } = authCredentials;
+    try {
+      const { username, password } = authCredentials;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = this.create({
-      username,
-      password: hashedPassword,
-    });
+      const user = this.create({
+        username,
+        password: hashedPassword,
+      });
 
-    await this.save(user);
+      await this.save(user);
+    } catch (error) {
+      this.logger.error(
+        `Failed to create user ${authCredentials.username}`,
+        error,
+      );
+      throw new InternalServerErrorException();
+    }
   }
 
   async findUserByUsername(username: string): Promise<User> {
-    return await this.findOne({ username });
+    try {
+      return await this.findOne({ username });
+    } catch (error) {
+      this.logger.error(`Failed to find user: ${username}`, error);
+      throw new InternalServerErrorException();
+    }
   }
 }
